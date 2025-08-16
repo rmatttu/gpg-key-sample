@@ -4,7 +4,13 @@ GPG key sample.
 
 ## Usage
 
-Add sample.
+```bash
+go mod tidy
+go build
+
+./main
+Hello, World!
+```
 
 ## Requirements
 
