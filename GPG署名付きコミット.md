@@ -248,3 +248,109 @@ gpg --armor --export-secret-keys <KEY_IDENTIFIER>
 その他
 
 - [WindowsにてVisual Studio Codeからcommitするときにgpg署名する #Git - Qiita](https://qiita.com/yumetodo/items/7c25c1d6de92921faa3e)
+
+## キーのエクスポート・インポート
+
+### エクスポート
+
+GPGキーをファイルとしてエクスポートし、信頼できる経路で別マシンへ転送します。
+
+```bash
+gpg --export-secret-keys B314C14E27DC44D1 > github_gpg_private.key
+```
+
+### インポート
+
+```bash
+gpg --import github_gpg_private.key
+```
+
+インポートしたGPGキーは、初期設定では信頼しない設定となっているようです。
+
+```bash
+gpg --list-secret-keys --keyid-format=long
+```
+
+```log
+----------------------------
+sec   rsa4096/B314C14E27DC44D1 2025-08-15 [SC] [expires: 2026-08-15]
+      D9EFA39C815ED905C4031B6DB314C14E27DC44D1
+uid                 [ unknown] rmatttu (Github GPG key) <mggggk@gmail.com>
+ssb   rsa4096/1E2CCD4DFB415E68 2025-08-15 [E] [expires: 2026-08-15]
+```
+
+uidが`[ unknown]`となっている。以下のコマンドでキーを信頼する。
+
+```bash
+gpg --edit-key B314C14E27DC44D1 trust quit
+```
+
+```log
+gpg (GnuPG) 2.2.40; Copyright (C) 2022 g10 Code GmbH
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Secret key is available.
+
+sec  rsa4096/B314C14E27DC44D1
+     created: 2025-08-15  expires: 2026-08-15  usage: SC
+     trust: unknown       validity: unknown
+ssb  rsa4096/1E2CCD4DFB415E68
+     created: 2025-08-15  expires: 2026-08-15  usage: E
+[ unknown] (1). rmatttu (Github GPG key) <mggggk@gmail.com>
+
+sec  rsa4096/B314C14E27DC44D1
+     created: 2025-08-15  expires: 2026-08-15  usage: SC
+     trust: unknown       validity: unknown
+ssb  rsa4096/1E2CCD4DFB415E68
+     created: 2025-08-15  expires: 2026-08-15  usage: E
+[ unknown] (1). rmatttu (Github GPG key) <mggggk@gmail.com>
+
+Please decide how far you trust this user to correctly verify other users' keys
+(by looking at passports, checking fingerprints from different sources, etc.)
+
+  1 = I don't know or won't say
+  2 = I do NOT trust
+  3 = I trust marginally
+  4 = I trust fully
+  5 = I trust ultimately
+  m = back to the main menu
+
+Your decision? 5
+Do you really want to set this key to ultimate trust? (y/N) y
+
+sec  rsa4096/B314C14E27DC44D1
+     created: 2025-08-15  expires: 2026-08-15  usage: SC
+     trust: ultimate      validity: unknown
+ssb  rsa4096/1E2CCD4DFB415E68
+     created: 2025-08-15  expires: 2026-08-15  usage: E
+[ unknown] (1). rmatttu (Github GPG key) <mggggk@gmail.com>
+Please note that the shown key validity is not necessarily correct
+unless you restart the program.
+```
+
+### GPGキーのパスフレーズ入力で失敗するとき
+
+以下のコマンド実行時。
+
+```bash
+echo 'test' | gpg --clearsign
+```
+
+以下のエラーが発生した。
+
+```log
+gpg: signing failed: Inappropriate ioctl for device
+```
+
+fishでは以下のコマンドを実行し、環境変数を設定する。
+
+```bash
+set -gx GPG_TTY (tty)
+```
+
+参考
+
+- [GPG キーのエクスポート/インポート - Smile Engineering Blog](https://smile-jsp.hateblo.jp/entry/2020/12/13/132318)
+- [署名付きcommitでerror: gpg failed to sign the dataになるとき．](https://zenn.dev/taqxlow/articles/91c4da91e67a1b)
+- [GPG won't work with fish · Issue #6643 · fish-shell/fish-shell](https://github.com/fish-shell/fish-shell/issues/6643)
